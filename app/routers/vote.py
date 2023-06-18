@@ -16,6 +16,9 @@ router = APIRouter(
 
 @router.post("/", status_code=201)
 def vote(vote:schemas.Vote, user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    election = db.query(models.Election).filter(models.Election.id == vote.election_id).first()
+    if not (election.is_active and election.is_finished):
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Voting is yet to start")
     user = db.query(models.User).filter(models.User.id == int(user.id)).first()
     is_admin = db.query(models.Admin).filter(models.Admin.username == user.username,
                                              models.Admin.election_id == vote.election_id).first()
