@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     database_name: str
     database_username: str
     secret_key: str
-    review_after:int
     algorithm: str
     access_token_expire_minutes: int
 
