@@ -8,7 +8,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, nullable=False)
     password = Column(String)
 
 class Election(Base):
@@ -28,9 +28,10 @@ class Admin(Base):
     __tablename__ = "admins"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String)
     election_id = Column(Integer, ForeignKey("elections.id", ondelete="CASCADE"), nullable=False) 
+    is_super =  Column(Boolean, nullable=False, server_default="False")
 
 class Post(Base):
     __tablename__ = "posts"

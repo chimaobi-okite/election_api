@@ -92,7 +92,10 @@ def get_election_results(id: int,user:Optional[schemas.TokenData]=Depends(oauth2
     election = db.query(models.Election).filter(models.Election.id == id).first()
     if not election:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Election With id {id} not found")
-    if not int(user.id) == election.creator_id:
+    user_data = db.query(models.User).filter(models.User.id == int(user.id)).first()
+    admin = db.query(models.Admin).filter(models.Admin.election_id == id, models.Admin.is_super == True,
+                                           models.Admin.email == user_data.email).first()
+    if not ((int(user.id) == election.creator_id) or (admin)):
         if not election.is_active and election.is_finished:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     election_results = db.query(models.Election).options(
@@ -106,6 +109,16 @@ def get_election_results(id: int,user:Optional[schemas.TokenData]=Depends(oauth2
             participant['total_votes'] = len(participant['votes'])
             results['posts'][i]['participants'][j]['total_votes'] = len(participant['votes'])
     return results
+
+@router.get("/{id}/voters", response_model=schemas.VotersCount)
+def get_num_reg_voters(id:int,db:Session = Depends(get_db)):
+    voter_count = db.query(models.Voter.id).filter(models.Voter.election_id == id).count()
+    return {"count":voter_count}
+
+@router.get("/{id}/admins", response_model=List[schemas.UserOut])
+def get_admins(id:int, db: Session = Depends(get_db)):
+    admins = db.query(models.Admin).filter(models.Admin.election_id == id).all()
+    return admins
     
 
     

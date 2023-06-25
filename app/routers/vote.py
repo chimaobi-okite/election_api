@@ -17,13 +17,13 @@ router = APIRouter(
 @router.post("/", status_code=201)
 def vote(vote:schemas.Vote, user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     election = db.query(models.Election).filter(models.Election.id == vote.election_id).first()
-    if not (election.is_active and election.is_finished):
-        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Voting is yet to start")
+    if not (election.is_active or election.is_finished):
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Voting is yet to start or already over")
     user = db.query(models.User).filter(models.User.id == int(user.id)).first()
-    is_admin = db.query(models.Admin).filter(models.Admin.username == user.username,
+    is_admin = db.query(models.Admin).filter(models.Admin.email == user.email,
                                              models.Admin.election_id == vote.election_id).first()
-    if not is_admin:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Cannt vote from here")
+    if not (is_admin or int(user.id) == election.creator_id):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Cannot vote from here")
     #check if voter is registered
     voter = db.query(models.Voter).filter(models.Voter.reg_num == vote.reg_num, models.Voter.election_id == vote.election_id).first()
     if not voter:

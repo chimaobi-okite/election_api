@@ -24,19 +24,10 @@ def create_admin(admin: schemas.Admin,
     hashed_password = utils.hash(admin.password)
     admin.password = hashed_password
     new_admin = models.Admin(**admin.dict())
-    new_user = models.User(username=admin.username, password=admin.password)
+    new_user = models.User(email=admin.email, password=admin.password)
     db.add(new_admin)
     db.add(new_user)
     db.commit()
-
-@router.get("/", response_model=List[schemas.UserOut])
-def get_admins(election_id:int = Form(), user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
-    election = db.query(models.Election).filter(models.Election.creator_id == int(user.id),
-                                                 models.Election.id == election_id)
-    if not election:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Only election creators can create admins")
-    admins = db.query(models.Admin).filter(models.Admin.election_id == election_id).all()
-    return admins
 
 @router.delete("/{id}", status_code=204)
 def delete_admin(id=id,election_id:int = Form(), user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):

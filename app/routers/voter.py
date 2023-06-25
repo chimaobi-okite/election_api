@@ -43,3 +43,4 @@ def register_voters(file: UploadFile, election_id:str = Form(), level:int = Form
     db.add_all(enrollments)
     db.commit()
     return Response(status_code=status.HTTP_201_CREATED, content="Voters registered successfuly")
+     

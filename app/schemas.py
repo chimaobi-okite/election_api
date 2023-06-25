@@ -1,8 +1,8 @@
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class UserBase(BaseModel):
-    username: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
@@ -17,6 +17,9 @@ class UserOut(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+    class Config:
+        orm_mode = True
 
 
 class TokenData(BaseModel):
@@ -37,6 +40,7 @@ class ElectionOut(ElectionUpdate):
 
 class Admin(UserCreate):
     election_id:int
+    is_super:bool = False
 
 class Post(BaseModel):
     post : str
@@ -101,6 +105,12 @@ class ElectionParticipants(ElectionOut):
 
 class ElectionResults(ElectionOut):
     posts: Optional[List[PostPartResults]] = None
+
+    class Config:
+        orm_mode = True
+
+class VotersCount(BaseModel):
+    count: int
 
     class Config:
         orm_mode = True
