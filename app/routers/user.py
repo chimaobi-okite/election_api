@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from sqlalchemy import func
+from sqlalchemy import exc
 # from sqlalchemy.sql.functions import func
 from .. import models, schemas, oauth2
 from ..database import get_db
@@ -21,10 +22,12 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
     new_user = models.User(**user.dict())
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
+    try:
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+    except exc.IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="user with email already exists")
     access_token = oauth2.create_access_token(data={"user_id": new_user.id})
 
     return {"access_token": access_token, "token_type": "bearer"}
