@@ -27,7 +27,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_user)
     except exc.IntegrityError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="user with email already exists")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                             detail="user with email already exists")
     access_token = oauth2.create_access_token(data={"user_id": new_user.id})
 
     return {"access_token": access_token, "token_type": "bearer"}
