@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware import Middleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import models
 from .database import engine
