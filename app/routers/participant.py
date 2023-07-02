@@ -16,7 +16,7 @@ router = APIRouter(
     tags=['Participants']
 )
 
-@router.post("/", response_model=schemas.ParticipantOut, status_code=201)
+@router.post("/", status_code=201)
 def add_participant(participant:schemas.Participant,
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     
@@ -33,7 +33,7 @@ def add_participant(participant:schemas.Participant,
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                              detail="Participant with same details already exists")
 
-    return new_participant
+    return #new_participant
 
 @router.put("/{id}", response_model=schemas.ParticipantOut, status_code=201)
 def update_participant(id: int, new_participant: schemas.Participant,
