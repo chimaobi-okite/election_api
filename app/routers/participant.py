@@ -58,7 +58,7 @@ def update_participant(id: int, new_participant: schemas.Participant,
     return participant_query.first()
 
 @router.delete("/{id}", status_code=204)
-def delete_admin(id=id, user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+def delete_participant(id=id, user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     participant_query = db.query(models.Participant).filter(models.Participant.id == id)
     old_participant = participant_query.first()
     if not old_participant:
