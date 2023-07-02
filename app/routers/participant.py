@@ -17,15 +17,15 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schemas.ParticipantOut, status_code=201)
-def add_participant(name:str = Form(), post_id:int = Form(), election_id:int = Form(),photo_url:str = Form(),
+def add_participant(participant:schemas.Participant,
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     
     if not db.query(models.Election).join(
-        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == election_id,
-                                        models.Election.creator_id == int(user.id), models.Post.id == post_id).first():
+        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == participant.election_id,
+                                        models.Election.creator_id == int(user.id), models.Post.id == participant.post_id).first():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     try:
-        new_participant = models.Participant(name=name,post_id=post_id,election_id=election_id,photo_url=photo_url)
+        new_participant = models.Participant(**participant.dict())
         db.add(new_participant)
         db.commit()
         db.refresh(new_participant)

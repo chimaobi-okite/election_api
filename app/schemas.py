@@ -56,10 +56,10 @@ class Participant(BaseModel):
     name:str
     post_id:int
     election_id:int
+    photo_url:Optional[str] = None
 
 class ParticipantOut(Participant):
     id:int 
-    photo_url:Optional[str] = None
 
     class Config:
         orm_mode = True
