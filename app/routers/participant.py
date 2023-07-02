@@ -17,19 +17,15 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schemas.ParticipantOut, status_code=201)
-def add_participant(name:str = Form(), post_id:int = Form(), election_id:int = Form(),file: UploadFile = File(...),
+def add_participant(name:str = Form(), post_id:int = Form(), election_id:int = Form(),photo_url:str = Form(),
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     
     if not db.query(models.Election).join(
         models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == election_id,
                                         models.Election.creator_id == int(user.id), models.Post.id == post_id).first():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    photo_loc = os.path.join(config.PHOTO_DIR, f"{election_id}{post_id}{name}")
-    with open(f'{photo_loc}','wb') as image:
-        image.write(file.file.read())
-        image.close()
     try:
-        new_participant = models.Participant(name=name,post_id=post_id,election_id=election_id,photo_url=photo_loc)
+        new_participant = models.Participant(name=name,post_id=post_id,election_id=election_id,photo_url=photo_url)
         db.add(new_participant)
         db.commit()
         db.refresh(new_participant)
@@ -72,3 +68,6 @@ def delete_participant(id=id, user:schemas.TokenData=Depends(oauth2.get_current_
     db.commit()
     db.refresh(participant_query.first())
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+    
