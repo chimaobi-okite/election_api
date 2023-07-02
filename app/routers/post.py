@@ -19,7 +19,7 @@ def create_post(post: schemas.Post,
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
 
     
-    if db.query(models.Post).filter(models.Post.post == post.post).first():
+    if db.query(models.Post).filter(models.Post.post == post.post, models.Post.election_id == post.election_id).first():
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Post with name {post.post} already exists")
     user_elections = db.query(models.Election).filter(
         models.Election.id == post.election_id, models.Election.creator_id == int(user.id)).first()

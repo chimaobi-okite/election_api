@@ -30,6 +30,8 @@ def register_voters(file: UploadFile, election_id:str = Form(), level:int = Form
         db.commit()
     csvReader = csv.DictReader(codecs.iterdecode(file.file, 'utf-8'))
     enrollments = []
+    if not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="file must be a csv")
     fields = csvReader.fieldnames
     if "NAMES" not in fields or "REG. NO." not in fields:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="either Names field or REG. NO. not in file")
