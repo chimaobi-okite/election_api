@@ -31,6 +31,10 @@ def create_admin(admin: schemas.Admin,
 
 @router.delete("/{id}", status_code=204)
 def delete_admin(id=id, user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    
+    admin_query = db.query(models.Admin).filter(models.Admin.id == id)
+    if not admin_query.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="admin not found")
     election_admin = db.query(models.Admin.id, models.Election.id,
                               models.Election.creator_id).join(models.Election, models.Admin.election_id
                                          == models.Election.id).filter(models.Admin.id == id).first()
