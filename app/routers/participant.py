@@ -17,40 +17,23 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schemas.ParticipantOut, status_code=201)
-def add_participant(participant: schemas.Participant,
+def add_participant(name:str, post_id:int, election_id:int,file: UploadFile = File(...),
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     
     if not db.query(models.Election).join(
-        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == participant.election_id,
-                                        models.Election.creator_id == int(user.id), models.Post.id == participant.post_id).first():
+        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == election_id,
+                                        models.Election.creator_id == int(user.id), models.Post.id == post_id).first():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    new_participant = models.Participant(**participant.dict())
+    photo_loc = os.path.join(config.PHOTO_DIR, f"{election_id}{post_id}{name}")
+    with open(f'{photo_loc}','wb') as image:
+        image.write(file.file.read())
+        image.close()
+    new_participant = models.Participant(name=name,post_id=post_id,election_id=election_id,photo_url=photo_loc)
     db.add(new_participant)
     db.commit()
     db.refresh(new_participant)
 
     return new_participant
-
-@router.put("{id}/photo", status_code=201)
-async def upload_photo(id:int, file: UploadFile = File(...),
-                       user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
-        participant_query = db.query(models.Participant).filter(models.Participant.id == id)
-        participant = participant_query.first()
-        if not participant:
-             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="participant with {id} not found")
-        if not db.query(models.Election).join(models.Participant,
-                                    models.Election.id == models.Participant.election_id).filter(
-             models.Election.creator_id == int(user.id), models.Participant.id == id).first():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-        
-        photo_loc = os.path.join(config.PHOTO_DIR, str(participant.id))
-        with open(f'{photo_loc}','wb') as image:
-            image.write(file.file.read())
-            image.close()
-        participant_query.update({"photo_url":photo_loc}, synchronize_session=False)
-        db.commit()
-        db.refresh(participant_query.first())
-        return participant_query.first()
 
 @router.put("/{id}", response_model=schemas.ParticipantOut, status_code=201)
 def update_participant(id: int, new_participant: schemas.Participant,
