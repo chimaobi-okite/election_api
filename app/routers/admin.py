@@ -30,10 +30,11 @@ def create_admin(admin: schemas.Admin,
     db.commit()
 
 @router.delete("/{id}", status_code=204)
-def delete_admin(id=id,election_id:int = Form(), user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
-    election = db.query(models.Election).filter(models.Election.creator_id == int(user.id),
-                                                 models.Election.id == election_id)
-    if not election:
+def delete_admin(id=id, user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    election_admin = db.query(models.Admin.id, models.Election.id,
+                              models.Election.creator_id).join(models.Election, models.Admin.election_id
+                                         == models.Election.id).filter(models.Admin.id == id).first()
+    if not (election_admin.creator_id == int(user.id)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Only election creators can create admins")
     admin_query = db.query(models.Admin).filter(models.Admin.id == id)
     if not admin_query.first():
