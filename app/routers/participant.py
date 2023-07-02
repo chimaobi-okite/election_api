@@ -4,7 +4,7 @@ from fastapi import FastAPI, File, Form, Response, status, HTTPException, Depend
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from sqlalchemy import func
+from sqlalchemy import func, exc
 # from sqlalchemy.sql.functions import func
 from .. import models, schemas, oauth2
 from ..database import get_db
@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=schemas.ParticipantOut, status_code=201)
-def add_participant(name:str, post_id:int, election_id:int,file: UploadFile = File(...),
+def add_participant(name:str = Form(), post_id:int = Form(), election_id:int = Form(),file: UploadFile = File(...),
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     
     if not db.query(models.Election).join(
@@ -28,10 +28,14 @@ def add_participant(name:str, post_id:int, election_id:int,file: UploadFile = Fi
     with open(f'{photo_loc}','wb') as image:
         image.write(file.file.read())
         image.close()
-    new_participant = models.Participant(name=name,post_id=post_id,election_id=election_id,photo_url=photo_loc)
-    db.add(new_participant)
-    db.commit()
-    db.refresh(new_participant)
+    try:
+        new_participant = models.Participant(name=name,post_id=post_id,election_id=election_id,photo_url=photo_loc)
+        db.add(new_participant)
+        db.commit()
+        db.refresh(new_participant)
+    except exc.IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                             detail="Participant with same details already exists")
 
     return new_participant
 
