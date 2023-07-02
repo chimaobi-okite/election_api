@@ -15,7 +15,7 @@ class Election(Base):
     __tablename__ = "elections"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, unique=True)
+    title = Column(String, unique=True, nullable=False)
     is_finished = Column(Boolean, nullable=False)
     is_active = Column(Boolean, nullable=False)
     creator_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

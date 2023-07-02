@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic.tools import parse_obj_as
 
 from sqlalchemy import func
+from sqlalchemy import exc
 # from sqlalchemy.sql.functions import func
 from .. import models, schemas, oauth2
 from ..database import get_db
@@ -25,9 +26,13 @@ def create_election(election: schemas.ElectionCreate,
 
 
     new_election = models.Election(**election.dict(), creator_id=user.id, is_active=False, is_finished=False)
-    db.add(new_election)
-    db.commit()
-    db.refresh(new_election)
+    try:
+        db.add(new_election)
+        db.commit()
+        db.refresh(new_election)
+    except exc.IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                             detail=f"Election with title {election.title} already exists")
 
     return new_election
 
@@ -75,6 +80,15 @@ def delete_election(id: int, user:schemas.TokenData=Depends(oauth2.get_current_u
     election_query.delete(synchronize_session=False)
     db.commit()
     return 
+
+@router.get("/{id}/posts", response_model=List[schemas.PostOut])
+def get_posts(id:int, db: Session = Depends(get_db)):
+    election = db.query(models.Election).filter(models.Election.id == id).first()
+    if not election:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Election With id {id} not found")
+    posts = db.query(models.Post).filter(
+        models.Post.election_id == id ).all()
+    return posts
 
 @router.get("/{id}/participants", response_model=schemas.ElectionParticipants)
 def get_participants(id:int, db: Session = Depends(get_db)):
