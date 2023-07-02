@@ -119,9 +119,16 @@ def get_election_results(id: int,user:Optional[schemas.TokenData]=Depends(oauth2
         models.Election.id == id).first()
     results = jsonable_encoder(election_results)
     for i, post in enumerate(results.get('posts')):
+        sum_votes = db.query(models.Vote.id).filter(
+            models.Vote.election_id == id, models.Vote.post_id == post['id']).count()
         for j, participant in enumerate(post.get('participants')):
             participant['total_votes'] = len(participant['votes'])
             results['posts'][i]['participants'][j]['total_votes'] = len(participant['votes'])
+            try:
+                percent_votes = round(len(participant['votes'])/sum_votes, 2)
+            except ZeroDivisionError:
+                percent_votes = 0.00
+            results['posts'][i]['participants'][j]['percent_votes'] = percent_votes
     return results
 
 @router.get("/{id}/voters", response_model=schemas.VotersCount)

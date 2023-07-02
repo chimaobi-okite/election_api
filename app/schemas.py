@@ -82,6 +82,7 @@ class VoteOut(BaseModel):
 class PartOutResult(ParticipantOut):
     votes:Optional[List[VoteOut]] = None
     total_votes:Optional[int] = None
+    percent_votes:Optional[float] = None
 
     class Config:
         orm_mode = True
