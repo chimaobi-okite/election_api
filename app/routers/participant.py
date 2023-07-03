@@ -35,6 +35,24 @@ def add_participant(participant:schemas.Participant,
 
     return #new_participant
 
+@router.post("/stuff", status_code=201)
+def add_participant(participant:schemas.Participant,
+                    user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    
+    if not db.query(models.Election).join(
+        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == participant.election_id,
+                                        models.Election.creator_id == int(user.id), models.Post.id == participant.post_id).first():
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    try:
+        new_participant = models.Participant(**participant.dict())
+        db.add(new_participant)
+        db.commit()
+        db.refresh(new_participant)
+    except exc.IntegrityError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                             detail="Participant with same details already exists")
+    return 
+
 @router.put("/{id}", response_model=schemas.ParticipantOut, status_code=201)
 def update_participant(id: int, new_participant: schemas.Participant,
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
