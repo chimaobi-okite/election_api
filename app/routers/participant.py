@@ -1,5 +1,6 @@
 import os
 import shutil
+import cloudinary.uploader
 from fastapi import FastAPI, File, Form, Response, status, HTTPException, Depends, APIRouter, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -16,16 +17,26 @@ router = APIRouter(
     tags=['Participants']
 )
 
+cloudinary.config( 
+  cloud_name = config.settings.cloud_api_name, 
+  api_key = config.settings.cloud_api_key, 
+  api_secret = config.settings.cloud_api_secret
+)
+
 @router.post("/", status_code=201)
-def add_participant(participant:schemas.Participant,
+async def add_participant(name:str= Form(), post_id:int = Form(), election_id:int= Form(),file:UploadFile = File(),
                     user:schemas.TokenData=Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     
     if not db.query(models.Election).join(
-        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == participant.election_id,
-                                        models.Election.creator_id == int(user.id), models.Post.id == participant.post_id).first():
+        models.Post, models.Election.id == models.Post.election_id).filter(models.Election.id == election_id,
+                                        models.Election.creator_id == int(user.id), models.Post.id == post_id).first():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    print(file.file)
+    response = cloudinary.uploader.upload(file.file)
+    image_url = response.get("secure_url")
     try:
-        new_participant = models.Participant(**participant.dict())
+        new_participant = models.Participant(name=name,post_id=post_id,
+                                             election_id=election_id, photo_url=image_url)
         db.add(new_participant)
         db.commit()
         db.refresh(new_participant)
