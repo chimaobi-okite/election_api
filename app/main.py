@@ -7,8 +7,7 @@ from .database import engine
 from .routers import user, auth, election, post, participant, voter, vote, admin
 # from .config import settings
 
-
-# models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 origins = [
     "http://localhost.tiangolo.com",
