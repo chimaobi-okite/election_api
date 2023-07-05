@@ -109,7 +109,7 @@ def get_election_results(id: int,user:Optional[schemas.TokenData]=Depends(oauth2
     user_data = db.query(models.User).filter(models.User.id == int(user.id)).first()
     admin = db.query(models.Admin).filter(models.Admin.election_id == id, models.Admin.is_super == True,
                                            models.Admin.email == user_data.email).first()
-    if not ((int(user.id) == election.creator_id) or (int(user.id) == admin.id)):
+    if not ((int(user.id) == election.creator_id) or (admin)):
         if not election.is_finished:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     election_results = db.query(models.Election).options(
