@@ -19,6 +19,8 @@ def vote(vote:schemas.Vote, user:schemas.TokenData=Depends(oauth2.get_current_us
     election = db.query(models.Election).filter(models.Election.id == vote.election_id).first()
     if not (election.is_active or election.is_finished):
         raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Voting is yet to start or already over")
+    if election.is_finished:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Voting has ended")
     user = db.query(models.User).filter(models.User.id == int(user.id)).first()
     is_admin = db.query(models.Admin).filter(models.Admin.email == user.email,
                                              models.Admin.election_id == vote.election_id).first()
