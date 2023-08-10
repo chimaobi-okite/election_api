@@ -53,10 +53,15 @@ when executed thoughtfully and responsibly, can significantly enhance traditiona
 
 ## Results
 Below are sample screens from the actual election. The deployed backend has been taken down due to cost accumulation.
-![1691669766639](https://github.com/chimaobi-okite/election_api/assets/70687495/ea7b4740-7302-4c92-b6cb-406236ebb0d1)
-![1691669766613](https://github.com/chimaobi-okite/election_api/assets/70687495/91499c5b-5412-497b-bfae-0ad6594e34b3)
-![1691669766664](https://github.com/chimaobi-okite/election_api/assets/70687495/b82ec37f-e6c1-4409-91a7-2cef6179443c)
-![1691669766586](https://github.com/chimaobi-okite/election_api/assets/70687495/58e10e88-c497-4cc1-95c7-512ec56f2e0a)
+
+| Results                            | Candidates                           |
+| ----------------------------------- | ----------------------------------- |
+| ![1691669766639](https://github.com/chimaobi-okite/election_api/assets/70687495/ea7b4740-7302-4c92-b6cb-406236ebb0d1) | ![1691669766613](https://github.com/chimaobi-okite/election_api/assets/70687495/91499c5b-5412-497b-bfae-0ad6594e34b3) |
+
+| Results                            | Candidates                            |
+| ----------------------------------- | ----------------------------------- |
+| ![1691669766664](https://github.com/chimaobi-okite/election_api/assets/70687495/b82ec37f-e6c1-4409-91a7-2cef6179443c) | ![1691669766586](https://github.com/chimaobi-okite/election_api/assets/70687495/58e10e88-c497-4cc1-95c7-512ec56f2e0a) |
+
 
 ## Running the FastAPI Project on Your Computer
 
